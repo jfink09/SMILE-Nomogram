@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scatter Plot Nomogram with Best Fit Line</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<style>
+* {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* make sure the body fills the entire viewport */
+  background: RGB(15,15,17);
+}
+
+/*h1 {
+    color: #c7c7c7;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    font-weight: 500;
+}*/
+
+#plot {
+    background: RGB(15,15,17);
+    border-radius: 20px;
+    box-shadow: -5px -5px 10px rgba(100, 100, 100, 0.1),
+    5px 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+label {
+    color: #c7c7c7;
+}
+
+input {
+    background-color: rgb(15,15,17);
+    color: #c7c7c7;
+    font-size: 16px;
+    border: 2px solid #c7c7c7;
+    border-radius: 10px;
+    outline: none;
+    box-shadow: inset -5px -5px 10px rgba(100, 100, 100, 0.1),
+    inset 5px 5px 10px rgba(0, 0, 0, 0.5);
+    height: 30px;
+}
+
+button {
+    background-color: rgb(15,15,17);
+    border: 2px solid #c7c7c7;
+    border-radius: 10px;
+    color: #c7c7c7;
+    font-size: 16px;
+    height: 36px;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+  <!--<h1>SMILE Nomogram</h1>-->
+  
+  <div id="plot"></div>
+  <br>
+  <div>
+    <label for="x">Correction SEQ:</label>
+    <input type="number" id="x">
+    <label for="y">Achieved SEQ:</label>
+    <input type="number" id="y">
+    <button onclick="addPoint()">Add Point</button>
+    <button onclick="saveChart()">Save Chart</button>
+    <button onclick="deleteAllDataPoints()">Clear Chart</button>
+    <button onclick="deleteLastEntry();window.location.reload();">Remove Last Entry</button>
+  </div>
+  
+  <script>
+    // Initialize empty arrays for x and y data
+    var x = [];
+    var y = [];
+
+    // Define layout and data for plot
+    var layout = {
+      title: {text:'SMILE NOMOGRAM',font:{color:'c7c7c7',size:32,style:'Arial',letterSpacing: '4px'},},
+      xaxis: {title: 'Correction At Laser SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      width: 850,
+      height: 650,
+      plot_bgcolor: 'RGB(15,15,17)', // Set the background color of the plot to white
+      paper_bgcolor: 'RGB(15,15,17)' // set the background color of the entire plot
+    };
+    
+    var data = [
+      {
+        x: x,
+        y: y,
+        mode: 'markers',
+        type: 'scatter'
+      }
+    ];
+    
+    // Define function to update data and plot
+    function updatePlot() {
+      // Update data
+      var trace1 = {
+        x: x,
+        y: y,
+        mode: 'markers',
+        marker: {color:'#00FFFF'},
+        type: 'scatter',
+        name: 'Data Points'
+      };
+      
+      // Calculate best fit line
+      var n = x.length;
+      var sumX = x.reduce((a, b) => a + b);
+      var sumY = y.reduce((a, b) => a + b);
+      var sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b);
+      var sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b);
+      var m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      var b = (sumY - m * sumX) / n;
+      var xBestFit = [Math.min(...x), Math.max(...x)];
+      var yBestFit = [m * Math.min(...x) + b, m * Math.max(...x) + b];
+      
+      // Update best fit line
+      var trace2 = {
+        x: xBestFit,
+        y: yBestFit,
+        mode: 'lines',
+        type: 'scatter',
+        line: {
+          color: 'red',
+          dash: 'dash'
+        },
+        name: 'Best Fit'
+        
+      };
+
+      // Add y=x line
+  var xyMinMax = [-1,-2,-3,-4,-5,-6,-7,-8,-9, -1,-2,-3,-4,-5,-6,-7,-8,-9];
+  var trace3 = {
+    x: xyMinMax,
+    y: xyMinMax,
+    mode: 'lines',
+    line: {color: '#191970'},
+    type: 'scatter',
+    name: 'y=x line'}
+      
+      var plotData = [trace1, trace2, trace3];
+      
+      // Plot data
+      Plotly.newPlot('plot', plotData, layout);
+    }
+    
+    // Define function to add point
+    function addPoint() {
+      var xVal = parseFloat(document.getElementById('x').value);
+      var yVal = parseFloat(document.getElementById('y').value);
+      if (!isNaN(xVal) && !isNaN(yVal)) {
+        x.push(xVal);
+        y.push(yVal);
+        updatePlot();
+      }
+    }
+
+    // Plot initial empty plot
+    Plotly.newPlot('plot', data, layout);
+
+    function saveChart() {
+  // Save data to local storage
+  localStorage.setItem('chartData', JSON.stringify({x: x, y: y}));
+}
+
+// Check for stored data on page load
+document.addEventListener('DOMContentLoaded', function() {
+  var storedData = localStorage.getItem('chartData');
+  if (storedData) {
+    var data = JSON.parse(storedData);
+    x = data.x;
+    y = data.y;
+    updatePlot();
+  }
+});
+
+function deleteAllDataPoints() {
+  //localStorage.removeItem('chartData');
+  localStorage.clear(); // clear all data points from local storage
+  var numTraces = plot.data.length;
+  for (var i = 0; i < numTraces; i++) {
+    Plotly.deleteTraces(plot, 0); // delete the first trace each time to avoid index errors
+  }
+}
+
+function deleteLastEntry() {
+  // Retrieve chart data from local storage
+  let chartData = JSON.parse(localStorage.getItem('chartData'));
+
+  // Remove last data point from chart data
+  chartData.x.pop();
+  chartData.y.pop();
+
+  // Update local storage with modified chart data
+  localStorage.setItem('chartData', JSON.stringify(chartData));
+
+  // Retrieve the layout of the original plot
+  let originalPlot = document.getElementById('plot');
+  let layout = originalPlot.layout;
+
+  // Update plotly.js chart with modified chart data and original layout
+  Plotly.newPlot('plot', [chartData], layout);
+}
+
+
+  </script>
+</body>
+</html>
