@@ -16,7 +16,6 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* make sure the body fills the entire viewport */
   background: RGB(15,15,17);
 }
 
@@ -36,6 +35,11 @@ body {
 
 label {
     color: #c7c7c7;
+    display: inline-block;
+}
+
+p {
+  color: #c7c7c7;
 }
 
 input {
@@ -48,6 +52,9 @@ input {
     box-shadow: inset -5px -5px 10px rgba(100, 100, 100, 0.1),
     inset 5px 5px 10px rgba(0, 0, 0, 0.5);
     height: 30px;
+    width: 60px;
+    text-align: center;
+    display: inline-block;
 }
 
 button {
@@ -63,6 +70,31 @@ button:hover {
     cursor: pointer;
 }
 
+.container {
+    display: flex;
+    align-items: center;
+    width: 600px;
+    position: relative;
+  }
+
+#correction-seq {
+    margin-left: 10px;
+    display: none;
+    position: absolute; /* set the result to absolute positioning */
+  right: 0; /* align the result with the right of the container */
+  margin: 0; /* remove any margin from the result */
+  padding: 0; /* remove any padding from the result */
+  }
+
+#achieved-seq {
+  margin-left: 10px;
+  display: none;
+  position: absolute; /* set the result to absolute positioning */
+  right: 0; /* align the result with the right of the container */
+  margin: 0; /* remove any margin from the result */
+  padding: 0; /* remove any padding from the result */
+}
+
 </style>
 </head>
 <body>
@@ -71,20 +103,41 @@ button:hover {
   <div id="plot"></div>
   <br>
   <div>
-    <label for="x">Correction SEQ:</label>
+    <div class="container">
+    <label style="margin-right: 22px;">Pre-op Manifest Refraction:</label>
+    <input type="number" id="a" class="manifest">
+    <input type="number" id="b" class="manifest">
+    <input type="number" id="c" class="manifest">
+    <p id="correction-seq"></p>
+    </div>
+    <br>
+    <div class="container">
+    <label style="margin-right: 10px;">1-Month Manifest Refraction:</label>
+    <input type="number" id="e" class="manifest">
+    <input type="number" id="f" class="manifest">
+    <input type="number" id="g" class="manifest">
+    <p id="achieved-seq"></p>
+    </div>
+    <br>
+    <!--<label for="x">Correction SEQ:</label>
     <input type="number" id="x">
     <label for="y">Achieved SEQ:</label>
-    <input type="number" id="y">
+    <input type="number" id="y">-->
     <button onclick="addPoint()">Add Point</button>
-    <button onclick="saveChart()">Save Chart</button>
-    <button onclick="deleteAllDataPoints()">Clear Chart</button>
+    <!--<button onclick="saveChart()">Save Chart</button>-->
+    <button onclick="deleteAllDataPoints();window.location.reload();">Clear Chart</button>
     <button onclick="deleteLastEntry();window.location.reload();">Remove Last Entry</button>
   </div>
+
+  <div id="chart2"></div>
+  <div id="chart3"></div>
   
   <script>
     // Initialize empty arrays for x and y data
     var x = [];
     var y = [];
+    var A = null;
+    var B = null;
 
     // Define layout and data for plot
     var layout = {
@@ -144,12 +197,12 @@ button:hover {
       };
 
       // Add y=x line
-  var xyMinMax = [-1,-2,-3,-4,-5,-6,-7,-8,-9, -1,-2,-3,-4,-5,-6,-7,-8,-9];
+  var xyMinMax = [0,-1,-2,-3,-4,-5,-6,-7,-8,-9, 0,-1,-2,-3,-4,-5,-6,-7,-8,-9];
   var trace3 = {
     x: xyMinMax,
     y: xyMinMax,
     mode: 'lines',
-    line: {color: '#191970'},
+    line: {color: '#0818A8'},
     type: 'scatter',
     name: 'y=x line'}
       
@@ -158,66 +211,362 @@ button:hover {
       // Plot data
       Plotly.newPlot('plot', plotData, layout);
     }
+
+///////////////////////////////////////// Calculate Correction SEQ /////////////////////////////////////////
+
+// Get the input fields by their id's
+var inputA = document.getElementById("a");
+var inputB = document.getElementById("b");
+
+var inputE = document.getElementById("e");
+var inputF = document.getElementById("f");
+
+ // Get the result element by its id
+ var resultElement1 = document.getElementById("correction-seq");
+ var resultElement2 = document.getElementById("achieved-seq");
+  
+// Add an event listener to the input fields
+inputA.addEventListener("input", calculateResult1);
+inputB.addEventListener("input", calculateResult1);
+
+inputE.addEventListener("input", calculateResult2);
+inputF.addEventListener("input", calculateResult2);
+  
+// Function to calculate the result and display it on the page
+function calculateResult1() {
+    // Check if both input fields have values
+    if (inputA.value && inputB.value) {
+      var a = parseFloat(inputA.value); // Get the value from input tag a
+      var b = parseFloat(inputB.value); // Get the value from input tag b
+      var result = a + 0.5*b; // Calculate the result
+      A = result;
+      
+      // Display the result on the page
+      resultElement1.innerHTML = "Correction SEQ: " + result.toFixed(2);
+      resultElement1.style.display = "block"; // Show the result element
+    } else {
+      resultElement1.style.display = "none"; // Hide the result element
+    }
+  }
+
+// Function to calculate the result and display it on the page
+function calculateResult2() {
+    // Check if both input fields have values
+    if (inputE.value && inputF.value) {
+      var e = parseFloat(inputE.value); // Get the value from input tag a
+      var f = parseFloat(inputF.value); // Get the value from input tag b
+      var result = e + 0.5*f; // Calculate the result
+      B = result;
+      
+      // Display the result on the page
+      resultElement2.innerHTML = "Acheived SEQ: " + result.toFixed(2);
+      resultElement2.style.display = "block"; // Show the result element
+    } else {
+      resultElement2.style.display = "none"; // Hide the result element
+    }
+  }
+
+    // Initialize empty arrays for x and y data
+    var xx = [];
+    var yy = [];
+
+    // Define layout and data for plot
+    var layout2 = {
+      title: {text:'SMILE NOMOGRAM',font:{color:'c7c7c7',size:32,style:'Arial',letterSpacing: '4px'},},
+      xaxis: {title: 'Correction At Laser SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      width: 850,
+      height: 650,
+      plot_bgcolor: 'RGB(15,15,17)', // Set the background color of the plot to white
+      paper_bgcolor: 'RGB(15,15,17)' // set the background color of the entire plot
+    };
     
-    // Define function to add point
-    function addPoint() {
-      var xVal = parseFloat(document.getElementById('x').value);
-      var yVal = parseFloat(document.getElementById('y').value);
-      if (!isNaN(xVal) && !isNaN(yVal)) {
-        x.push(xVal);
-        y.push(yVal);
-        updatePlot();
+    var data2 = [
+      {
+        x: xx,
+        y: yy,
+        mode: 'markers',
+        type: 'scatter'
       }
+    ];
+    
+    // Define function to update data and plot
+    function updatePlot2() {
+      // Update data
+      var trace4 = {
+        x: xx,
+        y: yy,
+        mode: 'markers',
+        marker: {color:'#00FFFF'},
+        type: 'scatter',
+        name: 'Data Points'
+      };
+      
+      // Calculate best fit line
+      var n = x.length;
+      var sumX = x.reduce((a, b) => a + b);
+      var sumY = y.reduce((a, b) => a + b);
+      var sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b);
+      var sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b);
+      var m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      var b = (sumY - m * sumX) / n;
+      var xBestFit = [Math.min(...x), Math.max(...x)];
+      var yBestFit = [m * Math.min(...x) + b, m * Math.max(...x) + b];
+      
+      // Update best fit line
+      var trace5 = {
+        x: xBestFit,
+        y: yBestFit,
+        mode: 'lines',
+        type: 'scatter',
+        line: {
+          color: 'red',
+          dash: 'dash'
+        },
+        name: 'Best Fit'
+        
+      };
+
+      // Add y=x line
+  var xyMinMax = [0,-1,-2,-3,-4,-5,-6,-7,-8,-9, 0,-1,-2,-3,-4,-5,-6,-7,-8,-9];
+  var trace6 = {
+    x: xyMinMax,
+    y: xyMinMax,
+    mode: 'lines',
+    line: {color: '#0818A8'},
+    type: 'scatter',
+    name: 'y=x line'}
+      
+      var plotData2 = [trace4, trace5, trace6];
+      
+      // Plot data
+      Plotly.newPlot('chart2', plotData2, layout2);
     }
 
-    // Plot initial empty plot
-    Plotly.newPlot('plot', data, layout);
 
-    function saveChart() {
-  // Save data to local storage
-  localStorage.setItem('chartData', JSON.stringify({x: x, y: y}));
+
+
+
+    // Initialize empty arrays for x and y data
+    var xxx = [];
+    var yyy = [];
+
+    // Define layout and data for plot
+    var layout3 = {
+      title: {text:'SMILE NOMOGRAM',font:{color:'c7c7c7',size:32,style:'Arial',letterSpacing: '4px'},},
+      xaxis: {title: 'Correction At Laser SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      width: 850,
+      height: 650,
+      plot_bgcolor: 'RGB(15,15,17)', // Set the background color of the plot to white
+      paper_bgcolor: 'RGB(15,15,17)' // set the background color of the entire plot
+    };
+    
+    var data3 = [
+      {
+        x: xxx,
+        y: yyy,
+        mode: 'markers',
+        type: 'scatter'
+      }
+    ];
+    
+    // Define function to update data and plot
+    function updatePlot3() {
+      // Update data
+      var trace7 = {
+        x: xxx,
+        y: yyy,
+        mode: 'markers',
+        marker: {color:'#00FFFF'},
+        type: 'scatter',
+        name: 'Data Points'
+      };
+      
+      // Calculate best fit line
+      var n = x.length;
+      var sumX = x.reduce((a, b) => a + b);
+      var sumY = y.reduce((a, b) => a + b);
+      var sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b);
+      var sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b);
+      var m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      var b = (sumY - m * sumX) / n;
+      var xBestFit = [Math.min(...x), Math.max(...x)];
+      var yBestFit = [m * Math.min(...x) + b, m * Math.max(...x) + b];
+      
+      // Update best fit line
+      var trace8 = {
+        x: xBestFit,
+        y: yBestFit,
+        mode: 'lines',
+        type: 'scatter',
+        line: {
+          color: 'red',
+          dash: 'dash'
+        },
+        name: 'Best Fit'
+        
+      };
+
+      // Add y=x line
+  var xyMinMax = [0,-1,-2,-3,-4,-5,-6,-7,-8,-9, 0,-1,-2,-3,-4,-5,-6,-7,-8,-9];
+  var trace9 = {
+    x: xyMinMax,
+    y: xyMinMax,
+    mode: 'lines',
+    line: {color: '#0818A8'},
+    type: 'scatter',
+    name: 'y=x line'}
+      
+      var plotData3 = [trace7, trace8, trace9];
+      
+      // Plot data
+      Plotly.newPlot('chart3', plotData3, layout3);
+    }
+
+
+     // Define function to add point
+    
+     function addPoint() {
+
+//var xVal = parseFloat(document.getElementById('a').value); //var xVal = parseFloat(document.getElementById('x').value);
+//var yVal = parseFloat(document.getElementById('b').value); //var yVal = parseFloat(document.getElementById('y').value);
+//if (!isNaN(xVal) && !isNaN(yVal)) {
+  //x.push(xVal);
+  //x.push(A);
+  //y.push(yVal);
+  //y.push(B);
+  //updatePlot();
+  if(A != null && B != null) {
+    x.push(A);
+    y.push(B);
+    updatePlot();
+  }
+  var xVal = parseFloat(document.getElementById('a').value);
+  var yVal = parseFloat(document.getElementById('e').value);
+  if (!isNaN(xVal) && !isNaN(yVal)) {
+    xx.push(xVal);
+    yy.push(yVal);
+    updatePlot2();
+  }
+  var xxVal = parseFloat(document.getElementById('b').value);
+  var yyVal = parseFloat(document.getElementById('f').value);
+  if (!isNaN(xxVal) && !isNaN(yyVal)) {
+    xxx.push(xxVal);
+    yyy.push(yyVal);
+    updatePlot3();
+  }
+localStorage.setItem('chartData', JSON.stringify({x: x, y: y}));
+localStorage.setItem('chartData2',JSON.stringify({x: xx, y: yy}));
+localStorage.setItem('chartData3',JSON.stringify({x: xxx, y: yyy}));
+
+}
+
+// Plot initial empty plot
+Plotly.newPlot('plot', data, layout);
+Plotly.newPlot('chart2', data2, layout2);
+Plotly.newPlot('chart3', data3, layout3);
+
+function saveChart() {
+// Save data to local storage
+localStorage.setItem('chartData', JSON.stringify({x: x, y: y}));
+localStorage.setItem('chartData2', JSON.stringify({x: xx, y: yy}));
+localStorage.setItem('chartData3', JSON.stringify({x: xxx, y: yyy}));
 }
 
 // Check for stored data on page load
 document.addEventListener('DOMContentLoaded', function() {
-  var storedData = localStorage.getItem('chartData');
-  if (storedData) {
-    var data = JSON.parse(storedData);
-    x = data.x;
-    y = data.y;
-    updatePlot();
-  }
+var storedData = localStorage.getItem('chartData');
+var storedData2 = localStorage.getItem('chartData2');
+var storedData3 = localStorage.getItem('chartData3');
+if (storedData) {
+var data = JSON.parse(storedData);
+x = data.x;
+y = data.y;
+updatePlot();
+}
+if (storedData2) {
+var data2 = JSON.parse(storedData2);
+xx = data2.x;
+yy = data2.y;
+updatePlot2();
+}
+if (storedData3) {
+var data3 = JSON.parse(storedData3);
+xxx = data3.x;
+yyy = data3.y;
+updatePlot3();
+}
 });
 
 function deleteAllDataPoints() {
-  //localStorage.removeItem('chartData');
-  localStorage.clear(); // clear all data points from local storage
-  var numTraces = plot.data.length;
-  for (var i = 0; i < numTraces; i++) {
-    Plotly.deleteTraces(plot, 0); // delete the first trace each time to avoid index errors
-  }
+//localStorage.removeItem('chartData');
+localStorage.clear(); // clear all data points from local storage
+var numTraces = plot.data.length;
+for (var i = 0; i < numTraces; i++) {
+Plotly.deleteTraces(plot, 0); // delete the first trace each time to avoid index errors
+}
 }
 
 function deleteLastEntry() {
-  // Retrieve chart data from local storage
-  let chartData = JSON.parse(localStorage.getItem('chartData'));
+// Retrieve chart data from local storage
+let chartData = JSON.parse(localStorage.getItem('chartData'));
 
-  // Remove last data point from chart data
-  chartData.x.pop();
-  chartData.y.pop();
+// Remove last data point from chart data
+chartData.x.pop();
+chartData.y.pop();
 
-  // Update local storage with modified chart data
-  localStorage.setItem('chartData', JSON.stringify(chartData));
+// Update local storage with modified chart data
+localStorage.setItem('chartData', JSON.stringify(chartData));
 
-  // Retrieve the layout of the original plot
-  let originalPlot = document.getElementById('plot');
-  let layout = originalPlot.layout;
+// Retrieve the layout of the original plot
+let originalPlot = document.getElementById('plot');
+let layout = originalPlot.layout;
 
-  // Update plotly.js chart with modified chart data and original layout
-  Plotly.newPlot('plot', [chartData], layout);
+// Update plotly.js chart with modified chart data and original layout
+Plotly.newPlot('plot', [chartData], layout);
+
+/////////////////////////////////////////////////////////////////////////
+
+// Retrieve chart data from local storage
+let chartData2 = JSON.parse(localStorage.getItem('chartData2'));
+
+// Remove last data point from chart data
+chartData2.x.pop();
+chartData2.y.pop();
+
+// Update local storage with modified chart data
+localStorage.setItem('chartData2', JSON.stringify(chartData2));
+
+// Retrieve the layout of the original plot
+let originalPlot2 = document.getElementById('chart2');
+let layout2 = originalPlot2.layout2;
+
+// Update plotly.js chart with modified chart data and original layout
+Plotly.newPlot('chart2', [chartData2], layout2);
+
+
+/////////////////////////////////////////////////////////////////////////
+
+// Retrieve chart data from local storage
+let chartData3 = JSON.parse(localStorage.getItem('chartData3'));
+
+// Remove last data point from chart data
+chartData3.x.pop();
+chartData3.y.pop();
+
+// Update local storage with modified chart data
+localStorage.setItem('chartData3', JSON.stringify(chartData3));
+
+// Retrieve the layout of the original plot
+let originalPlot3 = document.getElementById('chart3');
+let layout3 = originalPlot3.layout3;
+
+// Update plotly.js chart with modified chart data and original layout
+Plotly.newPlot('chart3', [chartData3], layout3);
 }
+</script>
 
 
-  </script>
 </body>
 </html>
