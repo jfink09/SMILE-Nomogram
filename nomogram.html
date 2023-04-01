@@ -4,6 +4,7 @@
   <title>Scatter Plot Nomogram with Best Fit Line</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
 
 
 <style>
@@ -16,7 +17,8 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: RGB(15,15,17);
+  background: #1A1B1F; /*RGB(15,15,17)*/
+  margin: 50px 0 50px 0;
 }
 
 /*h1 {
@@ -27,10 +29,13 @@ body {
 }*/
 
 #plot {
-    background: RGB(15,15,17);
-    border-radius: 20px;
-    box-shadow: -5px -5px 10px rgba(100, 100, 100, 0.1),
-    5px 5px 10px rgba(0, 0, 0, 0.5);
+    background: #1A1B1F;
+    box-shadow: -3px -3px 7px #ffffff10, 3px 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+#chart2, #chart3 {
+    background: #1A1B1F;
+    box-shadow: -3px -3px 7px #ffffff10, 3px 3px 5px rgba(0, 0, 0, 0.3);
 }
 
 label {
@@ -128,9 +133,16 @@ button:hover {
     <button onclick="deleteAllDataPoints();window.location.reload();">Clear Chart</button>
     <button onclick="deleteLastEntry();window.location.reload();">Remove Last Entry</button>
   </div>
-
-  <div id="chart2"></div>
-  <div id="chart3"></div>
+<br><br>
+  <div class="chart-container">
+    <div class="row">
+      <div class="col">
+        <div id="chart2"></div>
+      </div>
+      <div class="col">
+        <div id="chart3"></div>
+      </div>
+    </div>
   
   <script>
     // Initialize empty arrays for x and y data
@@ -146,8 +158,8 @@ button:hover {
       yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
       width: 850,
       height: 650,
-      plot_bgcolor: 'RGB(15,15,17)', // Set the background color of the plot to white
-      paper_bgcolor: 'RGB(15,15,17)' // set the background color of the entire plot
+      plot_bgcolor: '#1A1B1F', // Set the background color of the plot to white
+      paper_bgcolor: '#1A1B1F' // set the background color of the entire plot
     };
     
     var data = [
@@ -272,13 +284,13 @@ function calculateResult2() {
 
     // Define layout and data for plot
     var layout2 = {
-      title: {text:'SMILE NOMOGRAM',font:{color:'c7c7c7',size:32,style:'Arial',letterSpacing: '4px'},},
+      title: {text:'Corrected Vs. Achieved Sphere (D)',font:{color:'c7c7c7',size:22,style:'Arial',letterSpacing: '4px'},},
       xaxis: {title: 'Correction At Laser SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
       yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
-      width: 850,
-      height: 650,
-      plot_bgcolor: 'RGB(15,15,17)', // Set the background color of the plot to white
-      paper_bgcolor: 'RGB(15,15,17)' // set the background color of the entire plot
+      width: 550,
+      height: 450,
+      plot_bgcolor: '#1A1B1F', // Set the background color of the plot to white
+      paper_bgcolor: '#1A1B1F' // set the background color of the entire plot
     };
     
     var data2 = [
@@ -353,13 +365,13 @@ function calculateResult2() {
 
     // Define layout and data for plot
     var layout3 = {
-      title: {text:'SMILE NOMOGRAM',font:{color:'c7c7c7',size:32,style:'Arial',letterSpacing: '4px'},},
+      title: {text:'Corrected Vs. Achieved Cylinder (D)',font:{color:'c7c7c7',size:22,style:'Arial',letterSpacing: '4px'},},
       xaxis: {title: 'Correction At Laser SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
       yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
-      width: 850,
-      height: 650,
-      plot_bgcolor: 'RGB(15,15,17)', // Set the background color of the plot to white
-      paper_bgcolor: 'RGB(15,15,17)' // set the background color of the entire plot
+      width: 550,
+      height: 450,
+      plot_bgcolor: '#1A1B1F', // Set the background color of the plot to white
+      paper_bgcolor: '#1A1B1F' // set the background color of the entire plot
     };
     
     var data3 = [
