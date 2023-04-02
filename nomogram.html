@@ -17,7 +17,8 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #1A1B1F; /*RGB(15,15,17)*/
+  background: linear-gradient(to bottom right, #0f141c 59%, #071324 89%);
+  /*background: #1A1B1F; /*RGB(15,15,17)*/
   margin: 50px 0 50px 0;
 }
 
@@ -143,8 +144,19 @@ button:hover {
         <div id="chart3"></div>
       </div>
     </div>
+    <br><br>
+    <div>
+      <div class="container">
+      <label style="margin-right: 22px;">Pre-op Manifest Refraction:</label>
+      <input type="number" id="h" class="manifest">
+      <input type="number" id="i" class="manifest">
+      <input type="number" id="j" class="manifest">
+      <p id="predicted-seq"></p>
+      </div>
+      </div>
   
   <script>
+    //////////////////////////////////////////////////////////////////Chart 1////////////////////////////////////////////////////////////////////////////////////////////
     // Initialize empty arrays for x and y data
     var x = [];
     var y = [];
@@ -158,8 +170,13 @@ button:hover {
       yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
       width: 850,
       height: 650,
-      plot_bgcolor: '#1A1B1F', // Set the background color of the plot to white
-      paper_bgcolor: '#1A1B1F' // set the background color of the entire plot
+      plot_bgcolor: '#111721', // Set the background color of the plot to white
+      paper_bgcolor: '#111721', // set the background color of the entire plot
+      legend: {
+      font: {
+        color: '#c7c7c7'
+      }
+  }
     };
     
     var data = [
@@ -193,6 +210,15 @@ button:hover {
       var b = (sumY - m * sumX) / n;
       var xBestFit = [Math.min(...x), Math.max(...x)];
       var yBestFit = [m * Math.min(...x) + b, m * Math.max(...x) + b];
+
+      // create the equation string for the best fit line
+      var eqStr = 'y = ' + m.toFixed(2) + 'x + ' + b.toFixed(2);
+      // calculate R squared
+      // Calculate R squared value
+      var yMean = sumY / n;
+      var SST = y.map(yi => Math.pow(yi - yMean, 2)).reduce((a, b) => a + b);
+      var SSR = x.map((xi, i) => Math.pow(y[i] - m * xi - b, 2)).reduce((a, b) => a + b);
+      var R2 = 1 - SSR / SST;
       
       // Update best fit line
       var trace2 = {
@@ -204,9 +230,28 @@ button:hover {
           color: 'red',
           dash: 'dash'
         },
-        name: 'Best Fit'
+        name: eqStr + '<br>R² = ' + R2.toFixed(3),
         
       };
+
+          // Get the input and output elements
+// var sphere = document.getElementById('h');
+// var cylinder = document.getElementById('i');
+// var prediction = document.getElementById('predicted-seq');
+
+// // Listen for changes to the input element
+// inputElement.addEventListener('input', function() {
+//   // Get the user input value
+//   var sph = parseFloat(sphere.value);
+//   var cyl = parseFloat(cylinder.value);
+//   var result = sph + 0.5*cyl; // Calculate the result
+
+//   // Predict output values based on user input
+//   var predictedOutput = m * result + b;
+
+//   // Update the output element with the predicted output value
+//   prediction.innerHTML = predictedOutput.toFixed(2);
+// });
 
       // Add y=x line
   var xyMinMax = [0,-1,-2,-3,-4,-5,-6,-7,-8,-9, 0,-1,-2,-3,-4,-5,-6,-7,-8,-9];
@@ -224,7 +269,7 @@ button:hover {
       Plotly.newPlot('plot', plotData, layout);
     }
 
-///////////////////////////////////////// Calculate Correction SEQ /////////////////////////////////////////
+////////////////////////////////////////////////////////////////// Calculate Correction SEQ /////////////////////////////////////////////////////////////////////////
 
 // Get the input fields by their id's
 var inputA = document.getElementById("a");
@@ -278,6 +323,9 @@ function calculateResult2() {
     }
   }
 
+  //////////////////////////////////////////////////////////////////Chart 2////////////////////////////////////////////////////////////////////////////////////////////
+
+
     // Initialize empty arrays for x and y data
     var xx = [];
     var yy = [];
@@ -285,12 +333,17 @@ function calculateResult2() {
     // Define layout and data for plot
     var layout2 = {
       title: {text:'Corrected Vs. Achieved Sphere (D)',font:{color:'c7c7c7',size:22,style:'Arial',letterSpacing: '4px'},},
-      xaxis: {title: 'Correction At Laser SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
-      yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      xaxis: {title: 'Correction At Laser Sphere (D)',color:'#c7c7c7',autorange: 'reversed'},
+      yaxis: {title: 'Achieved Sphere (D)',color:'#c7c7c7',autorange: 'reversed'},
       width: 550,
       height: 450,
-      plot_bgcolor: '#1A1B1F', // Set the background color of the plot to white
-      paper_bgcolor: '#1A1B1F' // set the background color of the entire plot
+      plot_bgcolor: '#111721', // Set the background color of the plot to white
+      paper_bgcolor: '#111721', // set the background color of the entire plot
+      legend: {
+      font: {
+        color: '#c7c7c7'
+      }
+  }  
     };
     
     var data2 = [
@@ -315,15 +368,24 @@ function calculateResult2() {
       };
       
       // Calculate best fit line
-      var n = x.length;
-      var sumX = x.reduce((a, b) => a + b);
-      var sumY = y.reduce((a, b) => a + b);
-      var sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b);
-      var sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b);
+      var n = xx.length;
+      var sumX = xx.reduce((a, b) => a + b);
+      var sumY = yy.reduce((a, b) => a + b);
+      var sumXY = xx.map((xxi, i) => xxi * yy[i]).reduce((a, b) => a + b);
+      var sumX2 = xx.map(xxi => xxi * xxi).reduce((a, b) => a + b);
       var m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
       var b = (sumY - m * sumX) / n;
-      var xBestFit = [Math.min(...x), Math.max(...x)];
-      var yBestFit = [m * Math.min(...x) + b, m * Math.max(...x) + b];
+      var xBestFit = [Math.min(...xx), Math.max(...xx)];
+      var yBestFit = [m * Math.min(...xx) + b, m * Math.max(...xx) + b];
+
+      // create the equation string for the best fit line
+      var eqStr = 'y = ' + m.toFixed(2) + 'x + ' + b.toFixed(2);
+      // calculate R squared
+      // Calculate R squared value
+      var yMean = sumY / n;
+      var SST = yy.map(yyi => Math.pow(yyi - yMean, 2)).reduce((a, b) => a + b);
+      var SSR = xx.map((xxi, i) => Math.pow(yy[i] - m * xxi - b, 2)).reduce((a, b) => a + b);
+      var R2 = 1 - SSR / SST;
       
       // Update best fit line
       var trace5 = {
@@ -335,7 +397,7 @@ function calculateResult2() {
           color: 'red',
           dash: 'dash'
         },
-        name: 'Best Fit'
+        name: eqStr + '<br>R² = ' + R2.toFixed(3)
         
       };
 
@@ -356,7 +418,7 @@ function calculateResult2() {
     }
 
 
-
+//////////////////////////////////////////////////////////////////Chart 3////////////////////////////////////////////////////////////////////////////////////////////
 
 
     // Initialize empty arrays for x and y data
@@ -366,12 +428,17 @@ function calculateResult2() {
     // Define layout and data for plot
     var layout3 = {
       title: {text:'Corrected Vs. Achieved Cylinder (D)',font:{color:'c7c7c7',size:22,style:'Arial',letterSpacing: '4px'},},
-      xaxis: {title: 'Correction At Laser SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
-      yaxis: {title: 'Achieved SEQ (D)',color:'#c7c7c7',autorange: 'reversed'},
+      xaxis: {title: 'Correction At Laser Cylinder (D)',color:'#c7c7c7',autorange: 'reversed'},
+      yaxis: {title: 'Achieved Cylinder (D)',color:'#c7c7c7',autorange: 'reversed'},
       width: 550,
       height: 450,
-      plot_bgcolor: '#1A1B1F', // Set the background color of the plot to white
-      paper_bgcolor: '#1A1B1F' // set the background color of the entire plot
+      plot_bgcolor: '#111721', // Set the background color of the plot to white
+      paper_bgcolor: '#111721', // set the background color of the entire plot
+      legend: {
+      font: {
+        color: '#c7c7c7'
+      }
+  }
     };
     
     var data3 = [
@@ -396,15 +463,24 @@ function calculateResult2() {
       };
       
       // Calculate best fit line
-      var n = x.length;
-      var sumX = x.reduce((a, b) => a + b);
-      var sumY = y.reduce((a, b) => a + b);
-      var sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b);
-      var sumX2 = x.map(xi => xi * xi).reduce((a, b) => a + b);
+      var n = xxx.length;
+      var sumX = xxx.reduce((a, b) => a + b);
+      var sumY = yyy.reduce((a, b) => a + b);
+      var sumXY = xxx.map((xxxi, i) => xxxi * yyy[i]).reduce((a, b) => a + b);
+      var sumX2 = xxx.map(xxxi => xxxi * xxxi).reduce((a, b) => a + b);
       var m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
       var b = (sumY - m * sumX) / n;
-      var xBestFit = [Math.min(...x), Math.max(...x)];
-      var yBestFit = [m * Math.min(...x) + b, m * Math.max(...x) + b];
+      var xBestFit = [Math.min(...xxx), Math.max(...xxx)];
+      var yBestFit = [m * Math.min(...xxx) + b, m * Math.max(...xxx) + b];
+
+      // create the equation string for the best fit line
+      var eqStr = 'y = ' + m.toFixed(2) + 'x + ' + b.toFixed(2);
+      // calculate R squared
+      // Calculate R squared value
+      var yMean = sumY / n;
+      var SST = yyy.map(yyyi => Math.pow(yyyi - yMean, 2)).reduce((a, b) => a + b);
+      var SSR = xxx.map((xxxi, i) => Math.pow(yyy[i] - m * xxxi - b, 2)).reduce((a, b) => a + b);
+      var R2 = 1 - SSR / SST;
       
       // Update best fit line
       var trace8 = {
@@ -416,7 +492,7 @@ function calculateResult2() {
           color: 'red',
           dash: 'dash'
         },
-        name: 'Best Fit'
+        name: eqStr + '<br>R² = ' + R2.toFixed(3)
         
       };
 
